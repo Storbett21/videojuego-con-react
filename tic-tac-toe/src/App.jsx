@@ -7,8 +7,8 @@ import './App.css'
 
 const TURNS = {
 
-  X: "X",
-  O: "O"
+  X: "✖️",
+  O: '⭕',
 }
 
 
@@ -47,9 +47,18 @@ const WINNER_COMBOS = [
 
 function App() {
 
-  const [board, setBoard] = useState(Array(9).fill(null))
+  const [board, setBoard] = useState(() =>{
+    const boardFromStorage = window.localStorage.getItem('board')
+    return boardFromStorage ? JSON.parse (boardFromStorage) : Array(9).fill(null)
+  
+  })
 
-  const [turn, setTurn] = useState(TURNS.X)
+  const [turn, setTurn] = useState(() => {
+    const turnFromStorage = window.localStorage.getItem('turn')
+    return turnFromStorage ?? TURNS.X
+    TURNS.X
+  
+  })
   // null es que no hay ganador, false es un empate
   const [winner, setWinner] = useState(null)
 
@@ -72,6 +81,10 @@ function App() {
     setBoard(Array(9).fill(null))
     setTurn(TURNS.X)
     setWinner(null)
+    window.localStorage.removeItem('board')
+    window.localStorage.removeItem('turn')
+
+
   }
 
   const checkendGame = (newBoard) => {
@@ -89,11 +102,18 @@ function App() {
     // cambiar el turno 
     const newTurn = turn == TURNS.X ? TURNS.O : TURNS.X
     setTurn(newTurn)
+    // guardar partida
+    window.localStorage.setItem('board', JSON.stringify(newBoard))
+    window.localStorage.setItem('turn', newTurn)
     // revisar si hay ganador
     const newWinner = checkWinner(newBoard)
     if (newWinner){
-      confetti()
       setWinner(newWinner)
+      confetti({
+        particleCount: 1000,
+        spread: 100,
+        origin: { y: 0.6 }
+      })
     } else if (checkendGame(newBoard)) {
       setWinner(false)
     }
